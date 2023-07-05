@@ -1,0 +1,19 @@
+essential_packages:
+  - htop
+  - neofetch
+  - tmux
+  - git
+  - vim
+
+dev_folders:
+  - parent: ~/dev
+    subfolders:
+    - personal_repos
+    - work_repos
+    - files
+    - notes
+    - temp
+
+pointers:
+  aliases: '[ -f $HOME/dev/personal_repos/bash_scripts/aliases.sh ] && source $HOME/dev/personal_repos/bash_scripts/aliases.sh'
+  zsh: '[ -f $HOME/dev/personal_repos/bash_scripts/zsh.sh ] && source $HOME/dev/personal_repos/bash_scripts/zsh.sh'

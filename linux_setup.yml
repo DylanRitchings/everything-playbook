@@ -1,0 +1,19 @@
+---
+- host: localhost
+  tasks:
+    - block:
+      - name: Create dev_folders
+        include_tasks: tasks/create_folders.yml
+        vars:
+          folders: "{{ dev_folders }}"
+      become: no
+
+    - block:
+      - name: Install essential packages
+        include_tasks: tasks/essentials.yml
+      become: yes
+
+    - block:
+      - name: Install doom emacs
+        include_tasks: tasks/install_emacs.yml
+      become: no

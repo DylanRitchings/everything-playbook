@@ -1,0 +1,12 @@
+---
+- hosts: all
+  tasks:
+    - block:
+      - name: Install essential packages
+        include_tasks: tasks/essential.yml
+      become: yes
+
+    - block:
+      - name: Install doom emacs
+        include_tasks: tasks/install_emacs.yml
+      become: no

@@ -1,0 +1,60 @@
+- name: Install required packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - autoconf
+    - build-essential
+    - libgccjit-10-dev
+    - libjansson-dev
+    - libjpeg-dev
+    - libncurses-dev
+    - libtinfo-dev
+    - libtool
+    - libxpm-dev
+    - texinfo
+
+- block:
+  - name: Fetch Emacs source code
+    ansible.builtin.git:
+      repo: git://git.savannah.gnu.org/emacs.git
+      dest: /tmp/emacs
+      version: emacs-28
+      force: true
+
+  - name: Configure and compile Emacs
+    command: |
+      cd /tmp/emacs
+      ./autogen.sh
+      ./configure --with-native-compilation
+      make -j
+      make install
+    args:
+      creates: /usr/local/bin/emacs
+  become: no
+
+
+# - name: Install emacs
+#   package:
+#     become: yes
+#     name:
+#       - emacs
+
+- name: Clone .doom.d repo
+  become: no
+  ansible.builtin.git:
+    repo: "https://github.com/DylanRitchings/.doom.d.git"
+    dest: "{{ ansible_env.HOME }}/.doom.d"
+    version: main
+
+
+- name: Clone Doom .emacs.d repo
+  become: no
+  ansible.builtin.git:
+    repo: "https://github.com/hlissner/doom-emacs"
+    dest: "{{ ansible_env.HOME }}/.emacs.d"
+    version: main
+
+- name: Run Doom install scripts
+  become: no
+  command: "{{ ansible_env.HOME }}/.emacs.d/bin/doom install"
