@@ -1,12 +1,15 @@
 ---
 - hosts: all
-  tasks:
-    - block:
-      - name: Install essential packages
-        include_tasks: tasks/essential.yml
-      become: yes
 
-    - block:
-      - name: Install doom emacs
-        include_tasks: tasks/install_emacs.yml
-      become: no
+  roles:
+    - role: system
+
+    - role: mount_server_drives
+
+    - role: programming
+
+    - role: geerlingguy.pip
+
+    - role: geerlingguy.docker
+
+    # - role: docker_apps

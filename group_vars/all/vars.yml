@@ -1,9 +1,10 @@
+username: dylan
 essential_packages:
   - htop
   - neofetch
   - tmux
   - git
-  - vim
+  - neovim
 
 dev_folders:
   - parent: ~/dev
@@ -17,3 +18,11 @@ dev_folders:
 pointers:
   aliases: '[ -f $HOME/dev/personal_repos/bash_scripts/aliases.sh ] && source $HOME/dev/personal_repos/bash_scripts/aliases.sh'
   zsh: '[ -f $HOME/dev/personal_repos/bash_scripts/zsh.sh ] && source $HOME/dev/personal_repos/bash_scripts/zsh.sh'
+
+
+pip_install_packages:
+  - name: docker
+
+docker_apt_gpg_key: "https://download.docker.com/linux/ubuntu/gpg"
+
+docker_apt_repository: "deb https://download.docker.com/linux/ubuntu jammy stable"
