@@ -1,0 +1,150 @@
+#TODO install docker and apps on ssd
+#Torrent trackers:
+#https://hotio.dev/containers/qbittorrent/
+#
+#https://hub.docker.com/r/linuxserver/jackett
+#
+#Torrent rss:
+#
+#https://hub.docker.com/r/linuxserver/radarr
+#
+#https://hub.docker.com/r/linuxserver/sonarr
+#
+#https://hub.docker.com/r/evanbuss/openbooks/
+#
+#Plex:
+#https://hub.docker.com/r/linuxserver/plex
+#
+#Jellyfin:
+#https://hub.docker.com/r/linuxserver/jellyfin
+#
+#
+#File storage (move from google drive)
+#https://hub.docker.com/_/nextcloud/
+#
+#photos:
+#https://hub.docker.com/r/photoprism/photoprism
+#
+#password manager:
+#https://hub.docker.com/r/vaultwarden/server
+#
+#
+#DNS to get custom domain names (pihole or try find one that runs on server)
+#
+#Something to run backups
+#
+#
+#docker setup:
+#https://github.com/notthebee/infra/blob/main/roles/containers/tasks/install.yml
+#https://github.com/notthebee/infra/blob/main/roles/containers/templates/compose.yaml
+
+version: '3'
+
+services:
+  qbittorrent:
+    image: hotio/qbittorrent
+    container_name: qbittorrent
+    restart: unless-stopped
+    ports:
+      - 6881:6881
+      - 6881:6881/udp
+      - 8080:8080
+    volumes:
+      - /path/to/qbittorrent/config:/config
+      - /path/to/qbittorrent/downloads:/downloads
+
+  jackett:
+    image: linuxserver/jackett
+    container_name: jackett
+    restart: unless-stopped
+    ports:
+      - 9117:9117
+    volumes:
+      - /path/to/jackett/config:/config
+      - /path/to/jackett/downloads:/downloads
+
+  radarr:
+    image: linuxserver/radarr
+    container_name: radarr
+    restart: unless-stopped
+    ports:
+      - 7878:7878
+    volumes:
+      - /path/to/radarr/config:/config
+      - /path/to/radarr/downloads:/downloads
+      - /path/to/movies:/movies
+
+  sonarr:
+    image: linuxserver/sonarr
+    container_name: sonarr
+    restart: unless-stopped
+    ports:
+      - 8989:8989
+    volumes:
+      - /path/to/sonarr/config:/config
+      - /path/to/sonarr/downloads:/downloads
+      - /path/to/tvshows:/tvshows
+
+  openbooks:
+    image: evanbuss/openbooks
+    container_name: openbooks
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    volumes:
+      - /path/to/openbooks/config:/config
+      - /path/to/openbooks/data:/data
+
+  plex:
+    image: linuxserver/plex
+    container_name: plex
+    restart: unless-stopped
+    ports:
+      - 32400:32400
+    volumes:
+      - /path/to/plex/config:/config
+      - /path/to/plex/transcode:/transcode
+      - /path/to/movies:/movies
+      - /path/to/tvshows:/tvshows
+      - /path/to/photos:/photos
+
+  jellyfin:
+    image: linuxserver/jellyfin
+    container_name: jellyfin
+    restart: unless-stopped
+    ports:
+      - 8096:8096
+    volumes:
+      - /path/to/jellyfin/config:/config
+      - /path/to/jellyfin/cache:/cache
+      - /path/to/movies:/movies
+      - /path/to/tvshows:/tvshows
+      - /path/to/photos:/photos
+
+  nextcloud:
+    image: nextcloud
+    container_name: nextcloud
+    restart: unless-stopped
+    ports:
+      - 8081:80
+    volumes:
+      - /path/to/nextcloud/data:/var/www/html/data
+
+  photoprism:
+    image: photoprism/photoprism
+    container_name: photoprism
+    restart: unless-stopped
+    ports:
+      - 2342:2342
+    volumes:
+      - /path/to/photoprism/library:/photoprism/library
+      - /path/to/photoprism/originals:/photoprism/originals
+
+  vaultwarden:
+    image: vaultwarden/server
+    container_name: vaultwarden
+    restart: unless-stopped
+    ports:
+      - 8082:80
+    volumes:
+      - /path/to/vaultwarden/data:/data

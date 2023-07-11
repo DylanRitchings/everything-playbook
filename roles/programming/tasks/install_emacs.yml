@@ -1,0 +1,72 @@
+- block:
+
+  # - name: Update package cache
+  #   apt:
+  #     update_cache: yes
+  # - name: add repo
+  #   apt_repository:
+  #     repo: "ppa:ubuntu-toolchain-r/ppa"
+  #     state: present
+  #     update_cache: yes
+
+  - name: Install required packages
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - emacs
+      # - autoconf
+      # - make
+      # - texinfo
+      # - gnutls-bin
+      # - libgccjit-12-dev
+
+  become: yes
+
+
+# - block:
+#   - name: Fetch Emacs source code
+#     # ansible.builtin.git:
+#     #   repo: git://git.savannah.gnu.org/emacs.git
+#     #   dest: /tmp/emacs
+#     #   version: emacs-28
+#     #   force: true
+#     command: "git clone -b emacs-28 git://git.savannah.gnu.org/emacs.git /tmp/emacs"
+#     environment:
+#         ANSIBLE_STDOUT_CALLBACK: debug
+
+#   - name: Display command output
+#     debug:
+#       var: command_output.stdout_lines
+#       #Remove with-x=no to get gui environment
+
+#   - name: Configure and compile Emacs
+#     command: sh -c "cd /tmp/emacs && CC='gcc-10' && ./autogen.sh && CFLAGS='-I/usr/lib/gcc/x86_64-linux-gnu/12/include -L/usr/lib/gcc/x86_64-linux-gnu/12' ./configure --prefix=/usr/local --with-native-compilation --with-x=no --with-gnutls=ifavailable --without-pop && make && sudo make install"
+#   become: no
+
+- name: Tap jimeh/emacs-builds
+  community.general.homebrew_tap:
+    name: jimeh/emacs-builds
+  when: ansible_os_family == "Darwin"
+
+- name: Install Emacs nightly build
+  community.general.homebrew:
+    name: emacs-app-nightly-28
+  when: ansible_os_family == "Darwin"
+
+
+- name: Clone .doom.d repo
+  ansible.builtin.git:
+    repo: "https://github.com/DylanRitchings/.doom.d.git"
+    dest: "/home/{{ username }}/.doom.d"
+    # version: main
+
+
+- name: Clone Doom .emacs.d repo
+  ansible.builtin.git:
+    repo: "https://github.com/hlissner/doom-emacs"
+    dest: "/home/{{ username }}/.emacs.d"
+    # version: main
+
+- name: Run Doom install scripts
+  command: "/home/{{ username }}/.emacs.d/bin/doom install --force"

@@ -1,0 +1,10 @@
+username: dylan
+
+password: change
+
+essential_packages:
+  - htop
+  - neofetch
+  - tmux
+  - git
+  - neovim

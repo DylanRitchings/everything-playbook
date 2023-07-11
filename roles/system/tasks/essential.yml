@@ -1,0 +1,10 @@
+- name: Update packages
+  apt:
+    update_cache: yes
+    upgrade: yes
+
+- name: Install essential packages
+  include_tasks: common/install_packages.yml
+  vars:
+    packages: "{{ essential_packages }}"
+
