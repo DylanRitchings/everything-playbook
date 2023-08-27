@@ -1,15 +1,20 @@
 ---
 - hosts: all
-
   roles:
-    - role: system
+  - role: system
 
-    - role: mount_server_drives
+  - role: server/mount_drives
 
-    - role: programming
+  - role: programming
 
-    - role: geerlingguy.pip
+  - role: geerlingguy.pip
+    become: True
 
-    - role: geerlingguy.docker
+  - role: geerlingguy.docker
+    become: True
 
-    # - role: docker_apps
+  - role: server/folders
+    become: True
+
+  - role: server/containers
+    become: True

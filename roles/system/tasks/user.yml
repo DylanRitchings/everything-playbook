@@ -1,5 +1,6 @@
 ---
 - name: Ensure all necessary groups are created
+  become: true
   group:
     name: "{{ item }}"
   loop:
@@ -8,6 +9,7 @@
     - "{{ username }}"
 
 - name: Ensure the non-root user is created
+  become: true
   user:
     name: "{{ username }}"
     password: "{{ password | password_hash('sha512') }}"
@@ -19,6 +21,7 @@
     update_password: on_create
 
 - name: Enable passwordless sudo for "{{ username }}"
+  become: true
   lineinfile:
     dest: /etc/sudoers
     regexp: "^%wheel"
@@ -26,6 +29,7 @@
     validate: "/usr/sbin/visudo -cf %s"
 
 - name: Suppress login message
+  become: true
   file:
     path: "/home/{{ username }}/.hushlogin"
     mode: 0644

@@ -2,7 +2,6 @@ username: dylan
 essential_packages:
   - htop
   - neofetch
-  - tmux
   - git
   - neovim
 

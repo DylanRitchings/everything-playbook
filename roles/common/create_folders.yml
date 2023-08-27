@@ -1,7 +1,6 @@
+---
 - name: Create folders
-
   var: folders
-
   file:
     path: "{{ parent + '/' + item }}"
     state: directory
