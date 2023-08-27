@@ -1,0 +1,32 @@
+---
+
+- name: Generate random passwords
+  set_fact:
+    shared_group: users
+    directories:
+      - /backup
+      - /docker
+      - /cache
+      - /storage
+
+- name: Create {{ shared_group }} group
+  group:
+    name: "{{ shared_group }}"
+    state: present
+
+- name: Add users to {{ shared_group }} group
+  user:
+    name: "{{ item }}"
+    groups: "{{ shared_group }}"
+  loop:
+    - dylan
+    - docker
+
+- name: Configure directory permissions and ownership
+  file:
+    path: "{{ item }}"
+    owner: root
+    group: "{{ shared_group }}"
+    mode: '2775'
+    state: directory
+  loop: "{{ directories }}"

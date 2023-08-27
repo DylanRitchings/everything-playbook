@@ -1,0 +1,53 @@
+---
+- name: Generate random passwords
+  set_fact:
+    mysql_root_password: "{{ lookup('password', '/dev/null length=20 chars=ascii_letters,digits,special') }}"
+    nextcloud_db_password: "{{ lookup('password', '/dev/null length=20 chars=ascii_letters,digits,special') }}"
+    photoprism_db_password: "{{ lookup('password', '/dev/null length=20 chars=ascii_letters,digits,special') }}"
+
+- name: Create non-root user
+  become: yes
+  user:
+    name: "docker"
+    state: present
+    shell: /bin/bash
+    create_home: yes
+
+- name: Get PUID and PGID of the non-root user
+  command: id -u "docker"
+  register: puid_result
+
+- name: Get group ID of the non-root user
+  command: id -g "docker"
+  register: pgid_result
+
+- name: Set PUID and PGID facts
+  set_fact:
+    puid: "{{ puid_result.stdout }}"
+    pgid: "{{ pgid_result.stdout }}"
+
+- name: Template Docker Compose
+  template:
+    src: ../templates/compose.yml.j2
+    dest: /docker/docker-compose.yml
+  vars:
+    puid: "{{ puid }}"
+    pgid: "{{ pgid }}"
+  environment:
+    MYSQL_ROOT_PASSWORD: "{{ mysql_root_password }}"
+    MYSQL_PASSWORD_nextcloud: "{{ nextcloud_db_password }}"
+    MYSQL_PASSWORD_photoprism: "{{ photoprism_db_password }}"
+    MYSQL_PASSWORD: "{{ nextcloud_db_password }}"
+    PHOTOPRISM_DATABASE_PASSWORD: "{{ photoprism_db_password }}"
+
+- name: Run Docker Compose
+  command: docker-compose -f /docker/docker-compose.yml up -d
+  args:
+    chdir: /docker/
+
+    # mysql_root_password: "{{ lookup('password', '/dev/null length=20 chars=ascii_letters,digits,special') }}"
+    # nextcloud_db_password: "{{ lookup('password', '/dev/null length=20 chars=ascii_letters,digits,special') }}"
+    # photoprism_db_password: "{{ lookup('password', '/dev/null length=20 chars=ascii_letters,digits,special') }}"
+    # mysql_root_password: "{{ mysql_root_password }}"
+    # nextcloud_db_password: "{{ nextcloud_db_password }}"
+    # photoprism_db_password: "{{ photoprism_db_password }}"

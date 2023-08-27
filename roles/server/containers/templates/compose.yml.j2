@@ -1,0 +1,222 @@
+version: '3'
+
+services:
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    restart: unless-stopped
+    environment:
+      - PUID={{ puid }}
+      - PGID={{ pgid }}
+      - TZ=Etc/UTC
+      - AUTO_UPDATE=true
+    ports:
+      - 9117:9117
+    volumes:
+      - /docker/config:/config
+      - /storage/torrent/downloads:/downloads
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    restart: unless-stopped
+    environment:
+      - PUID={{ puid }}
+      - PGID={{ pgid }}
+      - TZ=Etc/UTC
+    ports:
+      - 7878:7878
+    volumes:
+      - /docker/config:/config
+      - /storage/torrent/movies:/movies
+      - /storage/torrent/tv:/tv
+      - /storage/torrent/downloads:/downloads
+
+  sonarr:
+    image: linuxserver/sonarr
+    container_name: sonarr
+    restart: unless-stopped
+    environment:
+      - PUID={{ puid }}
+      - PGID={{ pgid }}
+      - TZ=Etc/UTC
+    ports:
+      - 8989:8989
+    volumes:
+      - /docker/config:/config
+      - /storage/torrent/movies:/movies
+      - /storage/torrent/tv:/tv
+      - /storage/torrent/downloads:/downloads
+
+  openbooks:
+    image: evanbuss/openbooks:latest
+    container_name: openbooks
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    volumes:
+      - /storage/books:/books
+    environment:
+      - BASE_PATH=/openbooks/ #TODO what is this?
+
+  {# plex: #}
+  {#   image: lscr.io/linuxserver/plex:latest #}
+  {#   container_name: plex #}
+  {#   restart: unless-stopped #}
+  {#   environment: #}
+  {#     - PUID={{ puid }} #}
+  {#     - PGID={{ pgid }} #}
+  {#     - TZ=Etc/UTC #}
+  {#     - VERSION=docker #}
+  {#   ports: #}
+  {#     - 32400:32400 #}
+  {#   volumes: #}
+  {#     - /docker/config:/config #}
+  {#     - /storage/torrent/movies:/movies #}
+  {#     - /storage/torrent/tv:/tv #}
+  {#     - /storage/torrent:/all #}
+  {#     - /backup/photos:/photos #}
+
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    restart: unless-stopped
+    user: {{ puid }}:{{ pgid }}
+    network_mode: "host"
+    environment:
+      - PUID={{ puid }}
+      - PGID={{ pgid }}
+      - TZ=Etc/UTC
+    ports:
+      - 8096:8096
+    volumes:
+      - /docker/config/jellyfin:/config
+      - /cache/jellyfin:/cache
+      - /storage/torrents:/media
+      - /storage/photos:/photos
+
+  mariadb:
+    image: mariadb:latest
+    restart: always
+    volumes:
+      - /docker/mariadb:/var/lib/mysql
+    environment:
+     MYSQL_ROOT_PASSWORD:
+     MYSQL_DATABASE_nextcloud: "nextcloud"
+     MYSQL_USER_nextcloud: "nextcloud"
+     MYSQL_PASSWORD_nextcloud:
+     SQL_DATABASE_photoprism: "photoprism"
+     MYSQL_USER_photoprism: "photoprism"
+     MYSQL_PASSWORD_photoprism:
+
+  nextcloud:
+    image: lscr.io/linuxserver/nextcloud:latest
+    container_name: nextcloud
+    environment:
+      - PUID={{ puid }}
+      - PGID={{ pgid }}
+      - TZ=Etc/UTC
+    restart: always
+    ports:
+      - 8080:80
+    links:
+      - mariadb
+    volumes:
+      - /docker/config/nextcloud:/config
+      - /storage/nextcloud:/data
+    environment:
+      MYSQL_PASSWORD:
+      MYSQL_DATABASE: "nextcloud"
+      MYSQL_USER: "nextcloud"
+      MYSQL_HOST: "mariadb"
+
+  photoprism:
+    image: photoprism/photoprism
+    container_name: photoprism
+    restart: unless-stopped
+    ports:
+      - 2342:2342
+    volumes:
+      - /storage/photos:/photos
+    environment:
+      PHOTOPRISM_ADMIN_USER: "admin"
+      PHOTOPRISM_ADMIN_PASSWORD: "insecure"
+      PHOTOPRISM_DATABASE_NAME: "photoprism"
+      PHOTOPRISM_DATABASE_USER: "photoprism"
+      PHOTOPRISM_DATABASE_PASSWORD:
+
+  vaultwarden:
+    image: vaultwarden/server
+    container_name: vaultwarden
+    restart: unless-stopped
+    ports:
+      - 8082:80
+    volumes:
+      - /docker/config/vaultwarden:/config
+
+  rsnapshot:
+    image: lscr.io/linuxserver/rsnapshot:latest
+    container_name: rsnapshot
+    environment:
+      - PUID={{ puid }}
+      - PGID={{ pgid }}
+      - TZ=Etc/UTC
+    volumes:
+      - /docker/config/rsnapshot:/config #TODO edit /config/crontabs/root + /config/rsnapshot.conf
+      - /backup:/.snapshots
+      - /storage:/data
+    restart: unless-stopped
+  {# qbittorrent: #}
+  {#   image: lscr.io/linuxserver/qbittorrent:latest #}
+  {#   container_name: qbittorrent #}
+  {#   environment: #}
+  {#     - PUID={{ puid }} #}
+  {#     - PGID={{ pgid }} #}
+  {#     - TZ=Etc/UTC #}
+  {#     - WEBUI_PORT=8080 #}
+  {#   volumes: #}
+  {#     - /docker/config:/config #}
+  {#     - /storage/torrent:/downloads #}
+  {#   ports: #}
+  {#     - 6881:6881 #}
+  {#     - 6881:6881/udp #}
+  {#   restart: unless-stopped #}
+
+  tor:
+    image: dperson/torproxy
+    ports:
+      - "9050:9050"   # Expose Tor SOCKS proxy
+      - "9051:9051"   # Expose Tor ControlPort
+    volumes:
+      - /docker/config/tor:/etc/tor
+
+  deluge:
+    image: lscr.io/linuxserver/deluge:latest
+    container_name: deluge
+    environment:
+      - PUID={{ puid }}
+      - PGID={{ pgid }}
+      - TZ=Etc/UTC
+      - DELUGE_LOGLEVEL=error #optional
+    volumes:
+      - /docker/config/deluge:/config
+      - /storage/torrents:/downloads
+    ports:
+      - 8112:8112
+      - 6881:6881
+      - 6881:6881/udp
+    restart: unless-stopped
+  plex:
+    container_name: plex
+    image: plexinc/pms-docker
+    environment:
+      - PUID={{ puid }}
+      - PGID={{ pgid }}
+      - PLEX_CLAIM=claim-VPdFB1zDmCAnty8qh2od
+    volumes:
+      - /storage/torrents:/data
+      - /cache/plex:/cache
+      - /docker/config/plex:/config
+    ports:
+      - "32400:32400/tcp"
+    restart: unless-stopped
